@@ -1,0 +1,4 @@
+interface:
+  display_name: "ctx brief"
+  short_description: "Load routed repository context before coding"
+  default_prompt: "Use $ctx-brief to load the project brief before making changes."
