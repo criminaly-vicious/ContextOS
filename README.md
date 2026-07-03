@@ -28,6 +28,16 @@ Each target receives a different slice:
 
 All brief output is plain text written to stdout, so it can be copied or piped.
 
+### Windows PowerShell
+
+If PowerShell blocks npm-generated `.ps1` launchers through its execution
+policy, call the `.cmd` launchers without changing your security settings:
+
+```powershell
+npx.cmd @criminaly-vicious/ctx init
+ctx.cmd brief codex
+```
+
 ## Files created by `ctx init`
 
 ```text

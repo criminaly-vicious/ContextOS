@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-import { existsSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import { join } from "node:path";
 import { createInterface } from "node:readline/promises";
+import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { renderBrief, type Agent } from "./briefs.js";
 import { findRepositoryRoot } from "./git.js";
@@ -133,12 +134,24 @@ export async function main(
   }
 }
 
-const isEntryPoint =
-  process.argv[1] &&
-  new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1") ===
-    process.argv[1].replace(/\\/g, "/");
+export function isMainModule(
+  executablePath: string | undefined,
+  moduleUrl: string,
+): boolean {
+  if (!executablePath) {
+    return false;
+  }
 
-if (isEntryPoint) {
+  try {
+    return (
+      realpathSync(executablePath) === realpathSync(fileURLToPath(moduleUrl))
+    );
+  } catch {
+    return false;
+  }
+}
+
+if (isMainModule(process.argv[1], import.meta.url)) {
   main().catch((error: unknown) => {
     const message = error instanceof Error ? error.message : String(error);
     process.stderr.write(`ctx: ${message}\n`);

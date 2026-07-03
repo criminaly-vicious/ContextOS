@@ -1,11 +1,19 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, before, test } from "node:test";
+import { pathToFileURL } from "node:url";
 import { renderBrief } from "../src/briefs.js";
+import { isMainModule } from "../src/cli.js";
 import { initializeProject } from "../src/context.js";
 import { recordUsage, type UsageEvent } from "../src/usage.js";
 
@@ -195,6 +203,29 @@ test("an unrelated task override does not inherit stale acceptance criteria", ()
 
   assert.doesNotMatch(codex, /Add measurable completion criteria/);
   assert.match(codex, /Document measurable acceptance criteria/);
+});
+
+test("the CLI entrypoint resolves npm-style directory links", () => {
+  const root = temporaryRepository();
+  const packageDirectory = join(root, "package");
+  const linkedDirectory = join(root, "linked-package");
+  const entrypoint = join(packageDirectory, "cli.js");
+  mkdirSync(packageDirectory);
+  writeFileSync(entrypoint, "#!/usr/bin/env node\n", "utf8");
+  symlinkSync(
+    packageDirectory,
+    linkedDirectory,
+    process.platform === "win32" ? "junction" : "dir",
+  );
+
+  assert.equal(
+    isMainModule(
+      join(linkedDirectory, "cli.js"),
+      pathToFileURL(entrypoint).href,
+    ),
+    true,
+  );
+  assert.equal(isMainModule(join(root, "missing.js"), pathToFileURL(entrypoint).href), false);
 });
 
 test("disabled telemetry writes locally without making a network call", async () => {
