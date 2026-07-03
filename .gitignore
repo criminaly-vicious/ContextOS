@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.tgz
+
+# Local ctx installation data
+.ai/config.json
+.ai/usage.log
