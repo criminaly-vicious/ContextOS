@@ -1,0 +1,42 @@
+{
+  "name": "@criminaly-vicious/ctx",
+  "version": "0.1.0",
+  "description": "Generate agent-specific project briefs from local Git history and explicit project context.",
+  "type": "module",
+  "bin": {
+    "ctx": "dist/src/cli.js"
+  },
+  "files": [
+    "dist/src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "lint": "tsc --noEmit",
+    "test": "npm run build && node --test dist/test/ctx.test.js",
+    "prepack": "npm run clean && npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "ai",
+    "cli",
+    "context",
+    "git"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/criminaly-vicious/ContextOS.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}
