@@ -257,3 +257,46 @@ test("opted-in telemetry sends only installation id, command, and timestamp", as
     server.close((error) => (error ? reject(error) : resolve())),
   );
 });
+
+import { renderImpactBrief, validateChangePassport, type ChangePassport } from "../src/lineora.js";
+
+test("Lineora Change Passport requires evidence and confidence", () => {
+  const result = validateChangePassport({ changeId: "CHG-1" });
+
+  assert.equal(result.valid, false);
+  assert.ok(result.issues.some((issue) => issue.path === "evidence"));
+});
+
+test("Lineora Impact Brief renders evidence-backed change context", () => {
+  const passport: ChangePassport = {
+    changeId: "CHG-1842",
+    intent: {
+      source: "ENG-392",
+      description: "Impedir acesso cruzado entre organizações.",
+    },
+    actor: { type: "ai_agent", name: "codex", initiatedBy: "maintainer" },
+    scope: {
+      repositories: ["portal-api"],
+      components: ["ReportsController", "TenantPolicy"],
+      files: ["src/reports/controller.ts"],
+    },
+    risk: { level: "high", reasons: ["authorization_change"] },
+    evidence: [
+      {
+        type: "source_code",
+        reference: "src/reports/controller.ts:10-42",
+        confidence: 1,
+        status: "verified",
+        collectedAt: "2026-07-08T00:00:00.000Z",
+      },
+    ],
+    gaps: ["Endpoint /exports ainda usa organization_id informado pelo cliente."],
+    outcome: { deployed: false, incident: null },
+  };
+
+  assert.equal(validateChangePassport(passport).valid, true);
+  const brief = renderImpactBrief(passport);
+  assert.match(brief, /Lineora Impact Brief/);
+  assert.match(brief, /source_code: src\/reports\/controller\.ts:10-42/);
+  assert.match(brief, /confidence 1/);
+});
